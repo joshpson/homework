@@ -1,14 +1,14 @@
 //Storage Objects
 
+var household = [];
+
 var person = {
   age: null,
   relationship: null,
-  smoker: null
+  smoker: false
 };
 
-var household = [];
-
-//Current Values
+//Person Form Values
 
 function ageValue() {
   return document.querySelector('input[name="age"]').value;
@@ -22,7 +22,7 @@ function smokerValue() {
   return document.querySelector('input[name="smoker"]').checked;
 }
 
-//Buttons
+//Initial DOM Elements
 
 function addPersonButton() {
   return document.querySelector(".add");
@@ -32,16 +32,24 @@ function submitHouseholdButton() {
   return document.querySelector('button[type="submit"]');
 }
 
+function householdList() {
+  return document.querySelector(".household");
+}
+
 //Event Listeners
 
 function createPersonSubListener() {
   addPersonButton().addEventListener("click", function(e) {
     e.preventDefault();
-    savePersonValues();
-    addPersonToHousehold();
-    clearPersonValues();
-    console.log("person object", person);
-    console.log("household array", household);
+    if (ageValue() && relationshipValue()) {
+      savePersonValues();
+      addPersonToHousehold();
+      clearPersonValues();
+      console.log("person object", person);
+      console.log("household array", household);
+    } else {
+      console.log("you must enter an age and relationship");
+    }
   });
 }
 
@@ -62,6 +70,20 @@ function savePersonValues() {
 
 function addPersonToHousehold() {
   household.push(person);
+  householdList().appendChild(personListItem(person));
+}
+
+function personListItem(personObj) {
+  var relationship =
+    personObj["relationship"].charAt(0).toUpperCase() +
+    personObj["relationship"].substr(1);
+  var smoker = personObj["smoker"] ? "Smoker" : "Non-Smoker";
+  var age = personObj["age"];
+  var listItem = document.createElement("li");
+  listItem.className = "person";
+  listItem.innerText = relationship + ": Age: " + age + ", " + smoker;
+  console.log(listItem);
+  return listItem;
 }
 
 function clearPersonValues() {
@@ -71,6 +93,8 @@ function clearPersonValues() {
     smoker: null
   };
 }
+
+//Error Messaging
 
 //Initialization
 
