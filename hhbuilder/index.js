@@ -34,6 +34,10 @@ function householdList() {
   return document.querySelector(".household");
 }
 
+function debugPre() {
+  return document.querySelector(".debug");
+}
+
 //Event Listeners
 
 function createPersonSubListener() {
@@ -42,10 +46,8 @@ function createPersonSubListener() {
     if (ageValue() && relationshipValue()) {
       savePersonValues();
       addPersonToHousehold();
-      displayHousehold();
       resetPersonValues();
-      console.log("person object", person);
-      console.log("household array", household);
+      displayHousehold();
     } else {
       console.log("you must enter an age and relationship");
     }
@@ -61,8 +63,8 @@ function createHouseholdSubListener() {
 }
 
 function postHousehold() {
-  //This is where I would send the household to the server
-  console.log(JSON.stringify(household));
+  debugPre().style.display = "block";
+  debugPre().innerText = JSON.stringify(household);
 }
 
 //
@@ -152,7 +154,6 @@ function removePerson(id) {
 //Initialization
 
 function initialize() {
-  console.log("index.js initialized");
   createPersonSubListener();
   createHouseholdSubListener();
 }
