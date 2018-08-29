@@ -43,7 +43,7 @@ function createPersonSubListener() {
       savePersonValues();
       addPersonToHousehold();
       displayHousehold();
-      resetValues();
+      resetPersonValues();
       console.log("person object", person);
       console.log("household array", household);
     } else {
@@ -55,13 +55,25 @@ function createPersonSubListener() {
 function createHouseholdSubListener() {
   submitHouseholdButton().addEventListener("click", function(e) {
     e.preventDefault();
-    console.log("household added");
+    postHousehold();
+    resetForm();
   });
+}
+
+function postHousehold() {
+  //This is where I would send the household to the server
+  console.log(JSON.stringify(household));
 }
 
 //
 
-function resetValues() {
+function resetForm() {
+  resetPersonValues();
+  household = [];
+  displayHousehold();
+}
+
+function resetPersonValues() {
   person = {
     id: null,
     age: null,
