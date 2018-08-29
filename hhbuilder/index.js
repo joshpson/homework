@@ -42,6 +42,7 @@ function createPersonSubListener() {
     if (ageValue() && relationshipValue()) {
       savePersonValues();
       addPersonToHousehold();
+      displayHousehold();
       resetValues();
       console.log("person object", person);
       console.log("household array", household);
@@ -91,21 +92,27 @@ function savePersonValues() {
 
 function addPersonToHousehold() {
   household.push(person);
-  householdList().appendChild(personListItem(person));
+}
+
+function displayHousehold() {
+  householdList().innerHTML = "";
+  household.forEach(function(person) {
+    householdList().appendChild(personListItem(person));
+  });
 }
 
 function personListItem(personObj) {
   var listItem = document.createElement("li");
   listItem.className = "person";
   listItem.innerText = personDescription(personObj);
-  listItem.appendChild(personDeleteButton());
+  listItem.appendChild(personDeleteButton(personObj["id"]));
   return listItem;
 }
 
-function personDeleteButton() {
+function personDeleteButton(id) {
   var button = document.createElement("button");
   button.addEventListener("click", function() {
-    removePerson();
+    removePerson(id);
   });
   button.innerText = "x";
   return button;
@@ -121,8 +128,11 @@ function personDescription(personObj) {
   return description;
 }
 
-function removePerson() {
-  console.log("goodbye");
+function removePerson(id) {
+  household = household.filter(function(person) {
+    return person.id != id;
+  });
+  displayHousehold();
 }
 
 //Error Messaging
