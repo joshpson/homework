@@ -2,12 +2,6 @@
 
 var household = [];
 
-var person = {
-  age: null,
-  relationship: null,
-  smoker: false
-};
-
 //Person Form Values
 
 function ageValue() {
@@ -23,6 +17,10 @@ function smokerValue() {
 }
 
 //Initial DOM Elements
+
+function wrappingForm() {
+  return document.querySelector("form");
+}
 
 function addPersonButton() {
   return document.querySelector(".add");
@@ -44,7 +42,7 @@ function createPersonSubListener() {
     if (ageValue() && relationshipValue()) {
       savePersonValues();
       addPersonToHousehold();
-      clearPersonValues();
+      resetValues();
       console.log("person object", person);
       console.log("household array", household);
     } else {
@@ -60,9 +58,32 @@ function createHouseholdSubListener() {
   });
 }
 
-//Person Functions
+//
+
+function resetValues() {
+  person = {
+    id: null,
+    age: null,
+    relationship: null,
+    smoker: null
+  };
+  wrappingForm().reset();
+}
+
+//Person Data & Functions
+
+var personIdCounter = 0;
+
+var person = {
+  id: null,
+  age: null,
+  relationship: null,
+  smoker: false
+};
 
 function savePersonValues() {
+  personIdCounter += 1;
+  person["id"] = personIdCounter;
   person["age"] = ageValue();
   person["relationship"] = relationshipValue();
   person["smoker"] = smokerValue();
@@ -74,24 +95,34 @@ function addPersonToHousehold() {
 }
 
 function personListItem(personObj) {
+  var listItem = document.createElement("li");
+  listItem.className = "person";
+  listItem.innerText = personDescription(personObj);
+  listItem.appendChild(personDeleteButton());
+  return listItem;
+}
+
+function personDeleteButton() {
+  var button = document.createElement("button");
+  button.addEventListener("click", function() {
+    removePerson();
+  });
+  button.innerText = "x";
+  return button;
+}
+
+function personDescription(personObj) {
   var relationship =
     personObj["relationship"].charAt(0).toUpperCase() +
     personObj["relationship"].substr(1);
   var smoker = personObj["smoker"] ? "Smoker" : "Non-Smoker";
-  var age = personObj["age"];
-  var listItem = document.createElement("li");
-  listItem.className = "person";
-  listItem.innerText = relationship + ": Age: " + age + ", " + smoker;
-  console.log(listItem);
-  return listItem;
+  var age = personObj["age"] + " Years Old";
+  var description = relationship + ": " + age + ", " + smoker;
+  return description;
 }
 
-function clearPersonValues() {
-  person = {
-    age: null,
-    relationship: null,
-    smoker: null
-  };
+function removePerson() {
+  console.log("goodbye");
 }
 
 //Error Messaging
