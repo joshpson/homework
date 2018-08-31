@@ -1,22 +1,17 @@
-//Storage Objects
+//Global Storage Objects
 
 var household = [];
 
-//Person Form Values
+var personIdCounter = 0;
 
-function ageValue() {
-  return document.querySelector('input[name="age"]').value;
-}
+var currentPerson = {
+  id: null,
+  age: null,
+  relationship: null,
+  smoker: false
+};
 
-function relationshipValue() {
-  return document.querySelector('select[name="rel"]').value;
-}
-
-function smokerValue() {
-  return document.querySelector('input[name="smoker"]').checked;
-}
-
-//Initial DOM Elements
+//DOM Elements
 
 function wrappingForm() {
   return document.querySelector("form");
@@ -38,36 +33,55 @@ function debugPre() {
   return document.querySelector(".debug");
 }
 
+function builderDiv() {
+  return document.querySelector(".builder");
+}
+
+function errorDiv() {
+  return document.querySelector(".error");
+}
+
+//Form Values
+
+function ageValue() {
+  return parseInt(document.querySelector('input[name="age"]').value);
+}
+
+function relationshipValue() {
+  return document.querySelector('select[name="rel"]').value;
+}
+
+function smokerValue() {
+  return document.querySelector('input[name="smoker"]').checked;
+}
+
 //Event Listeners
 
-function createPersonSubListener() {
-  addPersonButton().addEventListener("click", function(e) {
-    e.preventDefault();
-    if (ageValue() && relationshipValue()) {
-      savePersonValues();
-      addPersonToHousehold();
-      resetPersonValues();
-      displayHousehold();
-    } else {
-      console.log("you must enter an age and relationship");
-    }
-  });
+function personSubmissionListener(e) {
+  e.preventDefault();
+  if (ageValue() && relationshipValue()) {
+    savePersonValues();
+    addPersonToHousehold();
+    resetPersonValues();
+    displayHousehold();
+    clearErrors();
+  } else {
+    displayPersonError();
+  }
 }
 
-function createHouseholdSubListener() {
-  submitHouseholdButton().addEventListener("click", function(e) {
-    e.preventDefault();
+function householdSubmissionListener(e) {
+  e.preventDefault();
+  if (household.length) {
     postHousehold();
     resetForm();
-  });
+    clearErrors();
+  } else {
+    displayHouseholdError();
+  }
 }
 
-function postHousehold() {
-  debugPre().style.display = "block";
-  debugPre().innerText = JSON.stringify(household);
-}
-
-//
+////Person & Household Functions
 
 function resetForm() {
   resetPersonValues();
@@ -76,7 +90,7 @@ function resetForm() {
 }
 
 function resetPersonValues() {
-  person = {
+  currentPerson = {
     id: null,
     age: null,
     relationship: null,
@@ -85,33 +99,22 @@ function resetPersonValues() {
   wrappingForm().reset();
 }
 
-//Person Data & Functions
-
-var personIdCounter = 0;
-
-var person = {
-  id: null,
-  age: null,
-  relationship: null,
-  smoker: false
-};
-
 function savePersonValues() {
   personIdCounter += 1;
-  person["id"] = personIdCounter;
-  person["age"] = ageValue();
-  person["relationship"] = relationshipValue();
-  person["smoker"] = smokerValue();
+  currentPerson["id"] = personIdCounter;
+  currentPerson["age"] = ageValue();
+  currentPerson["relationship"] = relationshipValue();
+  currentPerson["smoker"] = smokerValue();
 }
 
 function addPersonToHousehold() {
-  household.push(person);
+  household.push(currentPerson);
 }
 
 function displayHousehold() {
   householdList().innerHTML = "";
-  household.forEach(function(person) {
-    householdList().appendChild(personListItem(person));
+  household.forEach(function(currentPerson) {
+    householdList().appendChild(personListItem(currentPerson));
   });
 }
 
@@ -149,13 +152,43 @@ function removePerson(id) {
   displayHousehold();
 }
 
+//API Functions
+
+function postHousehold() {
+  debugPre().style.display = "block";
+  debugPre().innerText = JSON.stringify(household);
+}
+
 //Error Messaging
+
+function createErrorDiv() {
+  var error = document.createElement("div");
+  error.className = "error";
+  error.style.color = "red";
+  builderDiv().insertBefore(error, householdList());
+}
+
+function displayPersonError() {
+  errorDiv().innerText = "Please enter a valid age and relationship.";
+}
+
+function displayHouseholdError() {
+  errorDiv().innerText = "Please add at least one person to your household.";
+}
+
+function clearErrors() {
+  errorDiv().innerText = "";
+}
 
 //Initialization
 
 function initialize() {
-  createPersonSubListener();
-  createHouseholdSubListener();
+  addPersonButton().addEventListener("click", personSubmissionListener);
+  submitHouseholdButton().addEventListener(
+    "click",
+    householdSubmissionListener
+  );
+  createErrorDiv();
 }
 
 document.addEventListener("DOMContentLoaded", initialize);
