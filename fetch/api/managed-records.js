@@ -9,47 +9,50 @@ window.path = "http://localhost:3000/records";
 let primaryCheck = color =>
   color === "red" || color === "blue" || color === "yellow";
 
-let getRequest = url => {
-  return fetch(url).then(resp => {
-    return resp.json();
-  });
+let urlBuilder = (page, colors) => {
+  let offset = page * 10 - 10;
+  let url = `${window.path}?limit=10&offset=${offset}`;
+  if (colors) {
+    url += "&color[]=" + colors.join("&color[]=");
+  }
+  return url;
 };
 
-let urlBuilder = (page = 1, colors = []) => {
-  let colorParams = colors.length ? "&color[]=" + colors.join("&color[]=") : "";
-  let offset = (page - 1) * 10;
-  return `${window.path}?limit=10&offset=${offset}${colorParams}`;
-};
-
-const retrieve = ({ page = 1, colors = [] }) => {
-  return fetch(urlBuilder(page, colors))
+const retrieve = (options = {}) => {
+  let page = options["page"] ? options["page"] : 1;
+  let colors = options["colors"] ? options["colors"] : null;
+  let response = fetch(urlBuilder(page, colors))
     .then(resp => {
-      console.log(resp.status);
       return resp.json();
     })
     .then(json => {
-      console.log(json);
       let respObj = {
         ids: [],
         open: [],
         closedPrimaryCount: 0,
-        previousPage: page === 1 ? null : page - 1,
+        previousPage: page <= 1 ? null : page - 1,
         nextPage: null
       };
-      json.forEach(item => {
-        respObj["ids"].push(item.id);
-        if (item.disposition === "open") {
-          item["isPrimary"] = primaryCheck(item["color"]);
-          respObj["open"].push(item);
-        } else {
-          if (primaryCheck(item["color"])) {
-            respObj["closedPrimaryCount"] += 1;
+      if (json.length) {
+        json.forEach(item => {
+          respObj["ids"].push(item.id);
+          if (item.disposition === "open") {
+            item["isPrimary"] = primaryCheck(item["color"]);
+            respObj["open"].push(item);
+          } else {
+            if (primaryCheck(item["color"])) {
+              respObj["closedPrimaryCount"] += 1;
+            }
           }
-        }
-      });
+          respObj["nextPage"] = page >= 50 ? null : page + 1;
+        });
+      }
       return respObj;
     })
-    .catch(error => console.error(error));
+    .catch(err => {
+      console.log(err);
+    });
+  return response;
 };
 
 export default retrieve;
