@@ -29,7 +29,7 @@ function householdList() {
   return document.querySelector(".household");
 }
 
-function debugPre() {
+function householdContainer() {
   return document.querySelector(".debug");
 }
 
@@ -39,6 +39,14 @@ function builderDiv() {
 
 function errorDiv() {
   return document.querySelector(".error");
+}
+
+function householdEditButton() {
+  return document.querySelector(".household-edit");
+}
+
+function personDeleteButtons() {
+  return document.querySelectorAll(".delete-person");
 }
 
 //Form Values
@@ -76,6 +84,9 @@ function householdSubmissionListener(e) {
     postHousehold();
     resetForm();
     clearErrors();
+    hideHouseholdForm();
+    displayEditButton();
+    hideDeleteButtons();
   } else {
     displayHouseholdError();
   }
@@ -85,7 +96,6 @@ function householdSubmissionListener(e) {
 
 function resetForm() {
   resetPersonValues();
-  household = [];
   displayHousehold();
 }
 
@@ -128,11 +138,24 @@ function personListItem(personObj) {
 
 function personDeleteButton(id) {
   var button = document.createElement("button");
+  button.className = "delete-person";
   button.addEventListener("click", function() {
     removePerson(id);
   });
   button.innerText = "x";
   return button;
+}
+
+function hideDeleteButtons() {
+  personDeleteButtons().forEach(function(button) {
+    button.style.display = "none";
+  });
+}
+
+function displayDeleteButtons() {
+  personDeleteButtons().forEach(function(button) {
+    button.style.display = "inline";
+  });
 }
 
 function personDescription(personObj) {
@@ -152,11 +175,51 @@ function removePerson(id) {
   displayHousehold();
 }
 
-//API Functions
+function createEditButton() {
+  let editButton = document.createElement("button");
+  editButton.className = "household-edit";
+  editButton.innerText = "Edit Household";
+  editButton.style.display = "none";
+  editButton.addEventListener("click", editHousehold);
+  builderDiv().appendChild(editButton);
+}
+
+function displayEditButton() {
+  householdEditButton().style.display = "block";
+}
+
+function hideEditButton() {
+  householdEditButton().style.display = "none";
+}
+
+function editHousehold(e) {
+  e.preventDefault();
+  getHousehold();
+  displayHousehold();
+  displayHouseholdForm();
+  displayDeleteButtons();
+  hideEditButton();
+}
+
+function hideHouseholdForm() {
+  wrappingForm().style.display = "none";
+}
+
+function displayHouseholdForm() {
+  wrappingForm().style.display = "block";
+}
+
+//Fake API Calls
 
 function postHousehold() {
-  debugPre().style.display = "block";
-  debugPre().innerText = JSON.stringify(household);
+  householdContainer().style.display = "block";
+  householdContainer().innerHTML = JSON.stringify(household);
+}
+
+function getHousehold() {
+  household = JSON.parse(householdContainer().innerHTML);
+  householdContainer().style.display = "none";
+  householdContainer().innerHTML = "";
 }
 
 //Error Messaging
@@ -188,6 +251,7 @@ function initialize() {
     "click",
     householdSubmissionListener
   );
+  createEditButton();
   createErrorDiv();
 }
 
