@@ -63,16 +63,22 @@ function smokerValue() {
   return document.querySelector('input[name="smoker"]').checked;
 }
 
+//Validations
+
+function personValidation() {
+  return ageValue() && relationshipValue();
+}
+
+function householdValidation() {
+  return household.length;
+}
+
 //Event Listeners
 
 function personSubmissionListener(e) {
   e.preventDefault();
-  if (ageValue() && relationshipValue()) {
-    savePersonValues();
-    addPersonToHousehold();
-    resetPersonValues();
-    displayHousehold();
-    clearErrors();
+  if (personValidation()) {
+    submitPerson();
   } else {
     displayPersonError();
   }
@@ -80,34 +86,92 @@ function personSubmissionListener(e) {
 
 function householdSubmissionListener(e) {
   e.preventDefault();
-  if (household.length) {
-    postHousehold();
-    resetForm();
-    clearErrors();
-    hideHouseholdForm();
-    displayEditButton();
-    hideDeleteButtons();
+  if (householdValidation()) {
+    submitHousehold();
   } else {
     displayHouseholdError();
   }
 }
 
-////Person & Household Functions
-
-function resetForm() {
-  resetPersonValues();
-  displayHousehold();
+function editHouseholdListener(e) {
+  e.preventDefault();
+  editHousehold();
 }
 
-function resetPersonValues() {
-  currentPerson = {
-    id: null,
-    age: null,
-    relationship: null,
-    smoker: null
-  };
-  wrappingForm().reset();
+//Display Functions
+
+function hideHouseholdForm() {
+  wrappingForm().style.display = "none";
 }
+
+function displayHouseholdForm() {
+  wrappingForm().style.display = "block";
+}
+
+function displayEditButton() {
+  householdEditButton().style.display = "block";
+}
+
+function hideEditButton() {
+  householdEditButton().style.display = "none";
+}
+
+function displayDeleteButtons() {
+  personDeleteButtons().forEach(function(button) {
+    button.style.display = "inline";
+  });
+}
+
+function hideDeleteButtons() {
+  personDeleteButtons().forEach(function(button) {
+    button.style.display = "none";
+  });
+}
+
+function displayHousehold() {
+  householdList().innerHTML = "";
+  household.forEach(function(currentPerson) {
+    householdList().appendChild(createPersonLi(currentPerson));
+  });
+}
+
+//Element Creation
+
+function createPersonLi(personObj) {
+  var listItem = document.createElement("li");
+  listItem.className = "person";
+  listItem.innerText = personDescription(personObj);
+  listItem.appendChild(createPersonDeleteBtn(personObj["id"]));
+  return listItem;
+}
+
+function createPersonDeleteBtn(id) {
+  var button = document.createElement("button");
+  button.className = "delete-person";
+  button.addEventListener("click", function() {
+    removePerson(id);
+  });
+  button.innerText = "x";
+  return button;
+}
+
+function appendEditButton() {
+  let editButton = document.createElement("button");
+  editButton.className = "household-edit";
+  editButton.innerText = "Edit Household";
+  editButton.style.display = "none";
+  editButton.addEventListener("click", editHouseholdListener);
+  builderDiv().appendChild(editButton);
+}
+
+function appendErrorDiv() {
+  var error = document.createElement("div");
+  error.className = "error";
+  error.style.color = "red";
+  builderDiv().insertBefore(error, householdList());
+}
+
+//Person & Household Functions
 
 function savePersonValues() {
   personIdCounter += 1;
@@ -121,41 +185,14 @@ function addPersonToHousehold() {
   household.push(currentPerson);
 }
 
-function displayHousehold() {
-  householdList().innerHTML = "";
-  household.forEach(function(currentPerson) {
-    householdList().appendChild(personListItem(currentPerson));
-  });
-}
-
-function personListItem(personObj) {
-  var listItem = document.createElement("li");
-  listItem.className = "person";
-  listItem.innerText = personDescription(personObj);
-  listItem.appendChild(personDeleteButton(personObj["id"]));
-  return listItem;
-}
-
-function personDeleteButton(id) {
-  var button = document.createElement("button");
-  button.className = "delete-person";
-  button.addEventListener("click", function() {
-    removePerson(id);
-  });
-  button.innerText = "x";
-  return button;
-}
-
-function hideDeleteButtons() {
-  personDeleteButtons().forEach(function(button) {
-    button.style.display = "none";
-  });
-}
-
-function displayDeleteButtons() {
-  personDeleteButtons().forEach(function(button) {
-    button.style.display = "inline";
-  });
+function clearPersonValues() {
+  currentPerson = {
+    id: null,
+    age: null,
+    relationship: null,
+    smoker: null
+  };
+  wrappingForm().reset();
 }
 
 function personDescription(personObj) {
@@ -175,40 +212,6 @@ function removePerson(id) {
   displayHousehold();
 }
 
-function createEditButton() {
-  let editButton = document.createElement("button");
-  editButton.className = "household-edit";
-  editButton.innerText = "Edit Household";
-  editButton.style.display = "none";
-  editButton.addEventListener("click", editHousehold);
-  builderDiv().appendChild(editButton);
-}
-
-function displayEditButton() {
-  householdEditButton().style.display = "block";
-}
-
-function hideEditButton() {
-  householdEditButton().style.display = "none";
-}
-
-function editHousehold(e) {
-  e.preventDefault();
-  getHousehold();
-  displayHousehold();
-  displayHouseholdForm();
-  displayDeleteButtons();
-  hideEditButton();
-}
-
-function hideHouseholdForm() {
-  wrappingForm().style.display = "none";
-}
-
-function displayHouseholdForm() {
-  wrappingForm().style.display = "block";
-}
-
 //Fake API Calls
 
 function postHousehold() {
@@ -224,13 +227,6 @@ function getHousehold() {
 
 //Error Messaging
 
-function createErrorDiv() {
-  var error = document.createElement("div");
-  error.className = "error";
-  error.style.color = "red";
-  builderDiv().insertBefore(error, householdList());
-}
-
 function displayPersonError() {
   errorDiv().innerText = "Please enter a valid age and relationship.";
 }
@@ -243,6 +239,33 @@ function clearErrors() {
   errorDiv().innerText = "";
 }
 
+//Submission Functions
+
+function submitPerson() {
+  savePersonValues();
+  addPersonToHousehold();
+  clearPersonValues();
+  displayHousehold();
+  clearErrors();
+}
+
+function submitHousehold() {
+  postHousehold();
+  clearPersonValues();
+  hideDeleteButtons();
+  hideHouseholdForm();
+  displayEditButton();
+  clearErrors();
+}
+
+function editHousehold() {
+  getHousehold();
+  displayHousehold();
+  displayHouseholdForm();
+  displayDeleteButtons();
+  hideEditButton();
+}
+
 //Initialization
 
 function initialize() {
@@ -251,8 +274,8 @@ function initialize() {
     "click",
     householdSubmissionListener
   );
-  createEditButton();
-  createErrorDiv();
+  appendEditButton();
+  appendErrorDiv();
 }
 
 document.addEventListener("DOMContentLoaded", initialize);
