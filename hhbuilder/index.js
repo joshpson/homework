@@ -181,10 +181,6 @@ function savePersonValues() {
   currentPerson["smoker"] = smokerValue();
 }
 
-function addPersonToHousehold() {
-  household.push(currentPerson);
-}
-
 function clearPersonValues() {
   currentPerson = {
     id: null,
@@ -193,6 +189,10 @@ function clearPersonValues() {
     smoker: null
   };
   wrappingForm().reset();
+}
+
+function addPersonToHousehold() {
+  household.push(currentPerson);
 }
 
 function personDescription(personObj) {
