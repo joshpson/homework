@@ -7,12 +7,14 @@ window.path = "http://localhost:3000/records";
 // Your retrieve function plus any additional functions go here ...
 
 function urlBuilder(page, colors) {
+  let uri = new URI(window.path);
+  uri.addSearch("limit", 10);
   let offset = page * 10 - 10;
-  let url = `${window.path}?limit=10&offset=${offset}`;
+  uri.addSearch("offset", offset);
   if (colors) {
-    url += "&color[]=" + colors.join("&color[]=");
+    uri.addSearch({ "color[]": colors });
   }
-  return url;
+  return uri.toString();
 }
 
 function blankResponse() {
@@ -43,10 +45,10 @@ function transformJSON(json, page) {
   let respObj = blankResponse();
   respObj["previousPage"] = page <= 1 ? null : page - 1;
   if (json.length) {
+    respObj["nextPage"] = page >= 50 ? null : page + 1;
     json.forEach(record => {
       recordHandler(record, respObj);
     });
-    respObj["nextPage"] = page >= 50 ? null : page + 1;
   }
   return respObj;
 }
